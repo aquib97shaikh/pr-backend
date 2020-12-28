@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const {PrSchemas } = require("./PrSchemas");
-const pwd = "PKnjBMe1gAZSBs5S";
+const pwd = "";
 // const monogoURL = "mongodb://localhost/pr";
 const monogoURL = `mongodb+srv://pr-user:${pwd}@peerreview.sjzj9.mongodb.net/prDb?retryWrites=true&w=majority`;
 
