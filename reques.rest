@@ -1,0 +1,23 @@
+GET http://localhost:3000/signup
+
+###
+POST http://localhost:3000/signup
+content-type: application/json
+
+{
+    "fname": "Aquib",
+    "lname": "Shaikh",
+    "email":"aquibshaikh@gmail.com",
+    "pwd":"12345678",
+    "username":"aquibs"
+    
+}
+
+###
+GET http://localhost:3000/students/5fddeb529831b90bd0c73ac8
+
+###
+DELETE http://localhost:3000/students/5fddeb529831b90bd0c73ac8?type=hard
+
+###
+DELETE http://localhost:3000/students/5fddeb529831b90bd0c73ac8?type=soft
