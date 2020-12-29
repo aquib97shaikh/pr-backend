@@ -86,7 +86,8 @@ app.post("/signup", async (req, res) => {
 });
 app.get("/questions", AuthMiddleware,async (req, res) => {
   const { max, offset } = req.body;
-  const result = await PrModels.Question.find({}).skip(Number(offset) || 0).limit(Number(max) || 10);
+  
+  let result = await PrModels.Question.find({}).skip(Number(offset) || 0).limit(Number(max) || 10);
   const total2 = await PrModels.Question.aggregate([
     {
       $group: {
@@ -96,16 +97,19 @@ app.get("/questions", AuthMiddleware,async (req, res) => {
     },
   ]);
   const { total } = total2[0];
-  res.send({
+  result = {
     questions: result,
     total,
-  });
+  };
+  console.log("questions...",{result});
+  res.send(result);
 });
-app.post("/question", async (req, res) => {
+app.post("/question",AuthMiddleware, async (req, res) => {
   const body = req.body;
+  body.author = req.username;
   const newQuestion = PrModels.Question(body);
   await newQuestion.save();
-  res.send(newQuestion);
+  res.send({question:newQuestion});
 });
 
 app.post("/student", async (req, res) => {
@@ -117,8 +121,7 @@ app.post("/student", async (req, res) => {
 
 app.get("/userinfo",async (req,res) =>{
   let  token= req.headers["x-jtoken"];
-  console.log(req.headers);
-  console.log({token});
+;
   if(!(token)) return res.status(401).send({er:"No token found",auth:false});
   jwt.verify(token,config.SECRET_KEY,async (err,decode)=>{
     if(err) return res.status(500).send({auth:false,er:"Authentication failed"});
