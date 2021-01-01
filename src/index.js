@@ -84,33 +84,6 @@ app.post("/signup", async (req, res) => {
     res.send({ user: newStudent, token });
   }
 });
-app.get("/questions", AuthMiddleware,async (req, res) => {
-  const { max, offset } = req.body;
-  
-  let result = await PrModels.Question.find({}).skip(Number(offset) || 0).limit(Number(max) || 10);
-  const total2 = await PrModels.Question.aggregate([
-    {
-      $group: {
-        _id: null,
-        total: { $sum: 1 },
-      },
-    },
-  ]);
-  const { total } = total2[0];
-  result = {
-    questions: result,
-    total,
-  };
-  console.log("questions...",{result});
-  res.send(result);
-});
-app.post("/question",AuthMiddleware, async (req, res) => {
-  const body = req.body;
-  body.author = req.username;
-  const newQuestion = PrModels.Question(body);
-  await newQuestion.save();
-  res.send({question:newQuestion});
-});
 
 app.post("/student", async (req, res) => {
   const body = req.body;
@@ -132,6 +105,66 @@ app.get("/userinfo",async (req,res) =>{
     res.send({user:result[0],token});
   })
 })
+
+
+
+
+
+
+
+
+
+
+app.get("/questions", AuthMiddleware,async (req, res) => {
+  let { max, offset } = req.query;
+  console.log({max,offset})
+
+  max  = Number(max) || 10;
+  offset = Number(offset) -1 || 0;
+  console.log({max,offset})
+  let result = await PrModels.Question.find({}).skip(offset*max).limit(max);
+  const total2 = await PrModels.Question.aggregate([
+    {
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+      },
+    },
+  ]);
+  const { total } = total2[0];
+  result = {
+    questions: result,
+    total,
+  };
+  console.log("questions...",{result});
+  res.send(result);
+});
+
+app.get("/question/:id",AuthMiddleware, async (req,res)=>{
+  const id = req.params.id;
+  const result = await PrModels.Question.findById(id);
+  res.send(result);
+})
+
+app.post("/question",AuthMiddleware, async (req, res) => {
+  const body = req.body;
+  body.author = req.username;
+  const newQuestion = PrModels.Question(body);
+  await newQuestion.save();
+  res.send({question:newQuestion});
+});
+
+
+
+
+
+
+
+
+
+
+
+
 app.listen(port, () => {
   console.log("Listening on http://localhost:" + port);
 });
