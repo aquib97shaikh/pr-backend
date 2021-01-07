@@ -21,16 +21,30 @@ PrSchemas = {
     description: String,
     goals: [String],
   }),
-  Answer: new Schema({
+  Submission: new Schema({
     username: String,
     questionId: Schema.Types.ObjectId,
     gitlink: String,
     viewLink: String,
+    submittedAt : Date,
+  }),
+  AssigningPool : new Schema({
+    questionId : Schema.Types.ObjectId,
+    username:String,
+    submissionId: Schema.Types.ObjectId,
+    remaining:Number,
+  }),
+  ReviewPool : new Schema({
+    questionId:Schema.Types.ObjectId,
+    submissionId:Schema.Types.ObjectId,
+    // reviewerUsername:String,
+    username:String,
+    remaining:Number,
   }),
   Review: new Schema({
     username: String,
     questionId: Schema.Types.ObjectId,
-    answerId: Schema.Types.ObjectId,
+    submissionId: Schema.Types.ObjectId,
     r_username: String,
     reviewGoals: [String],
     reviewFeedback: [String],

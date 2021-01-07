@@ -8,19 +8,20 @@ const bcrypt = require("bcryptjs");
 const port = 9999;
 const app = express();
 const cors = require("cors");
-
+const totalReviewer = 5;
 // ////////////////////////////// Middleware //////////////////////////////
 app.use(cors({
   credentials:true,
-  origin:"http://localhost:3000"
+  origin:["http://localhost:3000","http://localhost:3001"]
 }));
 app.use(express.urlencoded());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extendend: false }));
 app.use(bodyParser.json());
+// app.use(require('connect').bodyParser());
 app.use((req,res,next)=>{
-  const {url,query} =req;
-  console.log({url,query});
+  const {url,query,body} =req;
+  console.log({url,query,body});
   next();
 });
 const AuthMiddleware = async (req,res,next) =>{
@@ -34,6 +35,7 @@ const AuthMiddleware = async (req,res,next) =>{
     req.user =result[0]
     next()
   })
+  console.log(req.body);
 }
 
 
@@ -158,9 +160,54 @@ app.post("/question",AuthMiddleware, async (req, res) => {
 
 
 
+app.post("/profile",AuthMiddleware, async (req, res) => {
+  //console.log("sending data from /profile to client ",req.user);
+  res.send(req.user);
+});
+
+app.post("/updateprofile", async (req, res) => {
+  const body = req.body;
+  const username = req.username;
+ console.log("user req came for updating user profile and body is ",body)
+ const docs=await PrModels.Student.updateOne({username:body.username},{gitlink:body.gitlink,fname:body.fname,lname:body.lname,gender:body.gender,city:body.city,country:body.country})
+ console.log(docs);
+  res.sendStatus(201);
+  // const newQuestion = PrModels.Question(body);
+  // await newQuestion.save();
+  //res.send({question:newQuestion});
+});
 
 
+app.post("/submit",AuthMiddleware,async (req,res)=>{
+  const {gitUrl:gitlink,questionId} = req.body;
+  let submission ={
+    username : req.user.username,
+    gitlink,
+    questionId,
+    submittedAt : new Date(),
+  };
+  console.log(submission);
+  const result =  PrModels.Submission(submission);
+  await result.save();
 
+  const result2 = PrModels.ReviewPool({questionId,username:req.user.username,submissionId:result._id,remaining:totalReviewer});
+  await result2.save()
+  res.send({submission:result});
+})
+
+app.get("/submit/:id",AuthMiddleware, async (req,res)=>{
+  const {username} = req.user;
+  const {id} = req.params;
+  console.log({username,id});
+  const result = await PrModels.Submission.find({username,questionId:id});
+  res.send({submission:result});
+})
+
+app.get("/pool",AuthMiddleware,async (req,res)=>{
+  const result = await PrModels.ReviewPool.find({username:{$ne:req.user.username}});
+  res.send({pool:result});
+
+})
 
 
 
